@@ -3,8 +3,14 @@
   become: true
   become_method: sudo
   tasks:
-    - import_role:
-        name: ubuntu-security
 
-  handlers:
-    - include: roles/ubuntu-security/handlers/main.yml
+    - name: "system | Upgrading all OS packages"
+      apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+
+  roles:
+    - fail2ban
+    - ubuntu-security
+    - rkhunter

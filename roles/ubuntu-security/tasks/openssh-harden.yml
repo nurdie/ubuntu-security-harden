@@ -1,14 +1,68 @@
 ---
 
-# playbook to security harden SSH
+# playbook to security harden OpenSSH
+
+- name: openssh | hardening | Restrict to Protocol 2
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "Protocol 2"
+    state: present
+    validate: 'sshd -t -f %s'
+  notify:
+    - reload sshd
+
+- name: openssh | hardening | Disable X11Forwarding
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "X11Forwarding no"
+    state: present
+    validate: 'sshd -t -f %s'
+  notify:
+    - reload sshd
+
+- name: openssh | hardening | Disable rhosts authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "IgnoreRhosts yes"
+    state: present
+    validate: 'sshd -t -f %s'
+  notify:
+    - reload sshd
+
+- name: openssh | hardening | Set UseDNS yes
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "UseDNS yes"
+    state: present
+    validate: 'sshd -t -f %s'
+  notify:
+    - reload sshd
+
+- name: openssh | hardening | Reject empty passwords
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    line: "PermitEmptyPasswords no"
+    state: present
+    validate: 'sshd -t -f %s'
+  notify:
+    - reload sshd
+
 # name uses profiles located in /etc/ufw/applications.d/
 # TODO: make this smarter
-- name: "[OPENSSH: FIREWALL] Allow SSH IN"
+- name: "openssh | firewall | Allow SSH IN"
   ufw:
     name: OpenSSH
     rule: allow
 
-- name: "[OPENSSH: CONFIG] Set PermitRootLogin to no"
+- name: "openssh | fail2ban | enable ssh jail"
+  ini_file:
+    path: /etc/fail2ban/jail.conf
+    section: ssh
+    option: enabled
+    value: true
+  when: '"fail2ban" in ansible_facts.packages'
+
+- name: "openssh | config | Set PermitRootLogin to no"
   lineinfile:
     path: /etc/ssh/sshd_config
     regex: ^(# *)?PermitRootLogin
@@ -16,5 +70,19 @@
   notify:
     - reload sshd
 
+- set_fact:
+    sshd_allowusers: "AllowUsers"
 
+- set_fact:
+    sshd_allowusers: "{{ sshd_allowusers + ' ' + item }}"
+  with_items: "{{ ssh_users_allow }}"
 
+- name: "openssh | config | Replace AllowUsers with new config"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^AllowUsers .+'
+    line: "{{ sshd_allowusers }}"
+    state: present
+    validate: 'sshd -t -f %s'
+  notify:
+    - reload sshd
