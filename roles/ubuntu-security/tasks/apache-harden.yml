@@ -1,0 +1,57 @@
+---
+
+- name: apache | firewall | Allow HTTP/HTTPS IN
+  ufw:
+    name: Apache Full
+    rule: allow
+
+- name: apache | fail2ban | enable apache jail
+  ini_file:
+    path: /etc/fail2ban/jail.conf
+    section: apache
+    option: enabled
+    value: true
+  when: '"fail2ban" in ansible_facts.packages'
+
+- name: apache | fail2ban | enable php-url-fopen jail
+  ini_file:
+    path: /etc/fail2ban/jail.conf
+    section: apache
+    option: enabled
+    value: true
+  when: 
+   - '"fail2ban" in ansible_facts.packages'
+   - '"php" in ansible_facts.packages'
+
+- name: apache | fail2ban | enable apache-overflows jail
+  ini_file:
+    path: /etc/fail2ban/jail.conf
+    section: apache-overflows
+    option: enabled
+    value: true
+  when: '"fail2ban" in ansible_facts.packages'
+
+- name: apache | fail2ban | enable apache-badbots jail
+  ini_file:
+    path: /etc/fail2ban/jail.conf
+    section: apache-badbots
+    option: enabled
+    value: true
+  when: '"fail2ban" in ansible_facts.packages'
+
+- name: apache | fail2ban | enable apache-nohome jail
+  ini_file:
+    path: /etc/fail2ban/jail.conf
+    section: apache-nohome
+    option: enabled
+    value: true
+  when: '"fail2ban" in ansible_facts.packages'
+
+- name: apache | fail2ban | enable apache-404 jail
+  ini_file:
+    path: /etc/fail2ban/jail.conf
+    section: apache-404
+    option: enabled
+    value: true
+  when: '"fail2ban" in ansible_facts.packages'
+

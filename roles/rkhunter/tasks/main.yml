@@ -1,0 +1,31 @@
+---
+# tasks file for rkhunter
+
+- name: rkhunter | system | Ensure rkhunter is installed
+  apt:
+    name: rkhunter
+    state: latest
+
+- name: rkhunter | config | Create /etc/rkhunter.conf
+  template:
+    src: "rkhunter.conf.j2"
+    dest: /etc/rkhunter.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify: update rkhunter
+
+- name: rkhunter | config | /etc/default/rkhunter
+  template:
+    src: "default/rkhunter.j2"
+    dest: /etc/default/rkhunter
+    owner: root
+    group: root
+    mode: 0644
+  notify: update rkhunter
+
+- name: rkhunter | update
+  command: rkhunter --update
+  register: rkhunter_update
+  failed_when: rkhunter_update.rc != 2 and rkhunter_update.rc != 0
+  changed_when: false
