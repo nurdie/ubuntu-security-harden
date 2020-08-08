@@ -1,0 +1,14 @@
+---
+- hosts: ubuntu-boxes
+  become: true
+  become_method: sudo
+  tasks:
+    - name: "[DISCOVERY] Check for accounts with empty passwords"
+      command: |
+              awk -F: '($2==""){print $1}' /etc/shadow
+      register: sys_empty_pass
+      failed_when: ( sys_empty_pass.stdout_lines|length ) > 0
+
+    - debug:
+        msg: "{{ sys_empty_pass }}"
+
