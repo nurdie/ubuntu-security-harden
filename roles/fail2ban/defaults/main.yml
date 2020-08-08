@@ -1,0 +1,67 @@
+# file: fail2ban/defaults/main.yml
+
+fail2ban_loglevel: 3
+fail2ban_logtarget: "/var/log/fail2ban.log"
+fail2ban_syslog_target: "/var/log/fail2ban.log"
+fail2ban_syslog_facility: 1
+fail2ban_socket: /var/run/fail2ban/fail2ban.sock
+fail2ban_pidfile: /var/run/fail2ban/fail2ban.pid
+
+fail2ban_ignoreip: "127.0.0.1/8"
+fail2ban_bantime: 600
+fail2ban_maxretry: 3
+fail2ban_backend: "auto"
+fail2ban_destemail: "security@dbshaw.com"
+fail2ban_banaction: "iptables-multiport"
+fail2ban_mta: "sendmail"
+fail2ban_protocol: "tcp"
+fail2ban_chain: "INPUT"
+fail2ban_action: "action_"
+
+fail2ban_auth_log: "/var/log/auth.log"
+
+fail2ban_services:
+  - name: "ssh"
+    enabled: "false"
+    port: "ssh"
+    filter: "sshd"
+    logpath: "/var/log/auth.log"
+    maxretry: 4
+  - name: "apache"
+    enabled: "false"
+    port: "http,https"
+    filter: "apache-auth"
+    logpath: "/var/log/apache*/*error.log"
+    maxretry: 4
+  - name: "php-url-fopen"
+    enabled: "false"
+    port: "http,https"
+    filter: "php-url-fopen"
+    logpath: "/var/log/apache*/*access.log"
+  - name: "apache-overflows"
+    enabled: "false"
+    port: "http,https"
+    filter: "apache-overflows"
+    logpath: "/var/log/apache*/*error.log"
+    maxretry: 3
+  - name: "apache-badbots"
+    enabled: "false"
+    port: "http,https"
+    filter: "apache-badbots"
+    logpath: "/var/log/apache*/*error.log"
+    maxretry: 3
+  - name: "apache-nohome"
+    enabled: "false"
+    port: "http,https"
+    filter: "apache-nohome"
+    logpath: "/var/log/apache*/*error.log"
+    maxretry: 3
+  - name: "apache-404"
+    enabled: "false"
+    port: "http,https"
+    filter: "apache-404"
+    logpath: "/var/log/apache*/*error.log*"
+    logpath: "/var/log/apache*/*access.log*"
+    bantime: 3600
+    findtime: 600
+    maxretry: 5
