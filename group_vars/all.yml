@@ -1,0 +1,6 @@
+---
+
+#ssh_users_allow:
+#  - user1
+#  - user2
+

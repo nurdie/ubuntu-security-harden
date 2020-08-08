@@ -1,0 +1,20 @@
+---
+
+# playbook to security harden SSH
+# name uses profiles located in /etc/ufw/applications.d/
+# TODO: make this smarter
+- name: "[OPENSSH: FIREWALL] Allow SSH IN"
+  ufw:
+    name: OpenSSH
+    rule: allow
+
+- name: "[OPENSSH: CONFIG] Set PermitRootLogin to no"
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regex: ^(# *)?PermitRootLogin
+    line: PermitRootLogin no
+  notify:
+    - reload sshd
+
+
+

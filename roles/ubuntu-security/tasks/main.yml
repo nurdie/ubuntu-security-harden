@@ -1,22 +1,44 @@
 ---
 # tasks file for ubuntu-security
 
-- name: Upgrading all OS packages
+- name: "[SYSTEM] Upgrading all OS packages"
   apt:
     name: "*"
     state: latest
     update_cache: yes
 
+- name: "[DISCOVERY] Gather system package facts"
+  package_facts:
+    manager: auto
+
 - name: "[DISCOVERY] Ensure only root has UID 0"
-    command: |
-            awk -F: '($3=="0"){print}' /etc/passwd
-    register: sys_uid_zero
-    failed_when: ( ( sys_uid_zero.stdout_lines|length ) > 1 ) or ( 'root' not in sys_uid_zero.stdout )
+  command: |
+          awk -F: '($3=="0"){print}' /etc/passwd
+  register: sys_uid_zero
+  failed_when: ( ( sys_uid_zero.stdout_lines|length ) > 1 ) or ( 'root' not in sys_uid_zero.stdout )
 
 - name: "[DISCOVERY] Check for accounts with empty passwords"
-    command: |
-            awk -F: '($2==""){print $1}' /etc/shadow
-    register: sys_empty_pass
-    failed_when: ( sys_empty_pass.stdout_lines|length ) > 0
+  command: |
+          awk -F: '($2==""){print $1}' /etc/shadow
+  register: sys_empty_pass
+  failed_when: ( sys_empty_pass.stdout_lines|length ) > 0
+
+- name: "[FIREWALL] Enable loging"
+  ufw:
+    logging: 'on'
+
+- name: "[FIREWALL] Default OUTGOING policy ALLOW"
+  ufw:
+    default: allow
+    direction: outgoing
+
+# Import application hardening tasks before hardening firewall
+- import_tasks: openssh-harden.yml
+  when: '"openssh-server" in ansible_facts.packages'
+
+- name: "[FIREWALL] Default INCOMING policy DENY"
+  ufw:
+    default: deny
+    direction: incoming
 
 
